@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase";
 import { Resend } from "resend";
 import { unstable_noStore as noStore } from "next/cache";
+import tenant from "@/tenant.config.json";
 
 export const dynamic = "force-dynamic";
 
@@ -114,10 +115,10 @@ export async function POST(request) {
         const result = await resend.emails.send({
           from: fromEmail,
           to: pedido.email,
-          subject: "¡Tu pedido fue confirmado! — Camisetas Zeus",
+          subject: `¡Tu pedido fue confirmado! — ${tenant.nombre}`,
           html: `
             <div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#18181b;color:#f4f4f5;padding:32px;border-radius:12px">
-              <img src="${process.env.NEXT_PUBLIC_URL}/logo.png" height="40" alt="Camisetas Zeus" style="margin-bottom:20px">
+              <img src="${process.env.NEXT_PUBLIC_URL}${tenant.logo}" height="40" alt="${tenant.nombre}" style="margin-bottom:20px">
               <h1 style="color:#f97316;margin:0 0 8px">¡Pago confirmado!</h1>
               <p style="color:#a1a1aa;margin:0 0 24px">Hola <strong style="color:#f4f4f5">${pedido.nombre}</strong>, recibimos tu pago correctamente. Prepararemos tu pedido a la brevedad.</p>
               <table style="width:100%;border-collapse:collapse">${itemsHtml}</table>

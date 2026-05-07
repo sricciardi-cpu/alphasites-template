@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { FaChevronRight, FaArrowRight, FaWhatsapp } from "react-icons/fa";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/fbpixel";
+import tenant from "@/tenant.config.json";
 
-const WHATSAPP_ADMIN = "5492216220145";
+const WHATSAPP_ADMIN = tenant.contacto.whatsapp;
 
 function formatearPrecio(precio) {
   return "$" + precio.toLocaleString("es-AR");
@@ -173,7 +174,7 @@ export default function CheckoutPage() {
     <main className="max-w-5xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-sm text-gray-400 mb-6">
-        <Link href="/" className="hover:text-orange-500 transition-colors">Inicio</Link>
+        <Link href="/tienda" className="hover:text-orange-500 transition-colors">Inicio</Link>
         <FaChevronRight className="text-xs" />
         <Link href="/carrito" className="hover:text-orange-500 transition-colors">Carrito</Link>
         <FaChevronRight className="text-xs" />

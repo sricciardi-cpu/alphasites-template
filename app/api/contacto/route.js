@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { NextResponse } from "next/server";
+import tenant from "@/tenant.config.json";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export async function POST(req) {
 
     await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev",
-      to: "camisetaszeus@hotmail.com",
+      to: tenant.contacto.email,
       replyTo: email,
       subject: `Nuevo mensaje de contacto — ${nombre}`,
       html: `

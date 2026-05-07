@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import tenant from "@/tenant.config.json";
 import {
   FaHome,
   FaTshirt,
@@ -80,11 +81,11 @@ export default function Navbar() {
       <div className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between">
         {/* Logo */}
         <Link
-          href="/"
+          href="/tienda"
           className="flex items-center gap-2 text-xl md:text-2xl font-bold tracking-wide hover:text-orange-400 transition-colors"
         >
-          <img src="/logo.png" alt="Camisetas Zeus" className="h-9 md:h-10 w-auto" />
-          <span className="hidden sm:inline">Camisetas Zeus</span>
+          <img src={tenant.logo} alt={tenant.nombre} className="h-9 md:h-10 w-auto" />
+          <span className="hidden sm:inline">{tenant.nombre}</span>
         </Link>
 
         {/* Desktop: links + carrito */}

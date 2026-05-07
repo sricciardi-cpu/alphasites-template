@@ -1,365 +1,329 @@
-"use client";
-
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
-import { supabase } from "@/lib/supabase";
-import productosLocales from "@/data/productos";
-import FadeIn from "@/components/FadeIn";
-import { FaHeart, FaStar, FaShippingFast, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaCheck, FaTimes, FaRocket, FaComments, FaStore, FaWhatsapp } from "react-icons/fa";
 
-function formatearPrecio(precio) {
-  return "$" + precio.toLocaleString("es-AR");
-}
+export const metadata = {
+  title: "Alpha Sites — Tu tienda online, hecha con vos",
+  description: "Creá tu tienda online personalizada con soporte humano, cero comisión y diseño exclusivo.",
+};
 
-const valores = [
-  { icon: FaHeart,        titulo: "Pasión por el deporte", texto: "Vivimos el rugby desde adentro." },
-  { icon: FaStar,         titulo: "Calidad garantizada",   texto: "Solo vendemos lo que nosotros mismos usaríamos." },
-  { icon: FaShippingFast, titulo: "Entrega rápida",        texto: "Stock disponible y envíos a todo el país." },
-];
-
-// Contador animado. Si el target cambia después de que la animación terminó
-// (o mientras está corriendo), actualiza el número directamente.
-function AnimatedCounter({ target, suffix = "" }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const animatedTo = useRef(null); // target al que ya se animó (null = sin animar todavía)
-  const timerRef = useRef(null);
-
-  useEffect(() => {
-    // Si ya animamos antes y target cambió, actualizar sin re-animar.
-    // También clereamos cualquier interval viejo que pudiera estar corriendo
-    // hacia el target anterior.
-    if (animatedTo.current !== null && animatedTo.current !== target) {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-      setCount(target);
-      animatedTo.current = target;
-      return;
-    }
-
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && animatedTo.current === null) {
-        animatedTo.current = target;
-        const duration = 1500;
-        const steps = 60;
-        const increment = target / steps;
-        let current = 0;
-        timerRef.current = setInterval(() => {
-          current += increment;
-          if (current >= target) {
-            setCount(target);
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          } else {
-            setCount(Math.floor(current));
-          }
-        }, duration / steps);
-      }
-    }, { threshold: 0.3 });
-
-    if (ref.current) observer.observe(ref.current);
-    return () => {
-      observer.disconnect();
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [target]);
-
-  return <span ref={ref}>{count.toLocaleString("es-AR")}{suffix}</span>;
-}
-
-// Carrusel con loop bidireccional (prepend último + append primero)
-function Carousel({ items }) {
-  const total    = items.length;
-  // [último, ...todos, primero] — arrancamos en idx=1 (el real primer item)
-  const extItems = [items[total - 1], ...items, items[0]];
-  const extTotal = extItems.length;
-
-  const [idx,      setIdx]      = useState(1);
-  const [offset,   setOffset]   = useState(0);
-  const [dragging, setDragging] = useState(false);
-  const [animated, setAnimated] = useState(true);
-  const jumping = useRef(false);
-  const startX  = useRef(0);
-
-  // Cuando llegamos al clon del extremo, saltamos sin animación al real
-  useEffect(() => {
-    if (jumping.current) return;
-    if (idx === 0) {
-      jumping.current = true;
-      const t = setTimeout(() => {
-        setAnimated(false);
-        setIdx(total);
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            setAnimated(true);
-            jumping.current = false;
-          });
-        });
-      }, 500);
-      return () => clearTimeout(t);
-    }
-    if (idx === total + 1) {
-      jumping.current = true;
-      const t = setTimeout(() => {
-        setAnimated(false);
-        setIdx(1);
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            setAnimated(true);
-            jumping.current = false;
-          });
-        });
-      }, 500);
-      return () => clearTimeout(t);
-    }
-  }, [idx, total]);
-
-  // Autoplay
-  useEffect(() => {
-    if (dragging) return;
-    const t = setInterval(() => {
-      if (!jumping.current) { setAnimated(true); setIdx((i) => i + 1); }
-    }, 3000);
-    return () => clearInterval(t);
-  }, [dragging]);
-
-  const onDragStart = (clientX) => { startX.current = clientX; setDragging(true); };
-  const onDragMove  = (clientX) => { if (!dragging) return; setOffset(clientX - startX.current); };
-  const onDragEnd   = () => {
-    const threshold = 60;
-    setAnimated(true);
-    if      (offset < -threshold) setIdx((i) => i + 1);
-    else if (offset > threshold)  setIdx((i) => i - 1);
-    setOffset(0);
-    setDragging(false);
-  };
-
-  // dot activo: idx 1..total mapea a 0..total-1
-  const dotIdx = ((idx - 1) % total + total) % total;
-
+function SeccionTitulo({ etiqueta, titulo, subtitulo }) {
   return (
-    <div
-      className="relative overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-900 shadow-sm select-none cursor-grab active:cursor-grabbing"
-      onMouseDown={(e) => onDragStart(e.clientX)}
-      onMouseMove={(e) => onDragMove(e.clientX)}
-      onMouseUp={onDragEnd}
-      onMouseLeave={onDragEnd}
-      onTouchStart={(e) => onDragStart(e.touches[0].clientX)}
-      onTouchMove={(e) => { e.preventDefault(); onDragMove(e.touches[0].clientX); }}
-      onTouchEnd={onDragEnd}
-    >
-      {/* Track */}
-      <div
-        className="flex"
-        style={{
-          width: `${extTotal * 100}%`,
-          transform: `translateX(calc(${-idx * (100 / extTotal)}% + ${offset / extTotal}px))`,
-          transition: dragging ? "none" : animated ? "transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94)" : "none",
-        }}
-      >
-        {extItems.map((producto, i) => (
-          <div key={i} style={{ width: `${100 / extTotal}%` }} className="shrink-0">
-            <img
-              src={producto.imagen}
-              alt={producto.nombre}
-              className="w-full object-contain max-h-64 md:max-h-80 bg-white pointer-events-none"
-              loading="lazy"
-            />
-            <div className="p-4 md:p-6 flex flex-col gap-2">
-              <span className="text-xs font-medium px-2 py-1 rounded-full bg-orange-500 text-black capitalize self-start">
-                Rugby
-              </span>
-              <h3 className="font-bold text-white text-lg leading-tight">{producto.nombre}</h3>
-              <p className="text-orange-500 font-extrabold text-xl">{formatearPrecio(producto.precio)}</p>
-              <Link
-                href={`/catalogo/${producto.id}`}
-                className="mt-2 inline-block text-center bg-black text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-orange-500 hover:text-black transition-colors border border-zinc-600"
-                onClick={(e) => { if (Math.abs(offset) > 5) e.preventDefault(); }}
-              >
-                Ver detalle
-              </Link>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Flechas */}
-      <button
-        onClick={() => { if (!jumping.current) { setAnimated(true); setIdx((i) => i - 1); } }}
-        className="absolute top-1/3 left-2 bg-black/50 hover:bg-black text-white rounded-full p-2 transition-colors z-10"
-      >
-        <FaChevronLeft />
-      </button>
-      <button
-        onClick={() => { if (!jumping.current) { setAnimated(true); setIdx((i) => i + 1); } }}
-        className="absolute top-1/3 right-2 bg-black/50 hover:bg-black text-white rounded-full p-2 transition-colors z-10"
-      >
-        <FaChevronRight />
-      </button>
-
-      {/* Dots */}
-      <div className="flex justify-center gap-2 pb-4">
-        {items.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => { if (!jumping.current) { setAnimated(true); setIdx(i + 1); } }}
-            className={`w-2 h-2 rounded-full transition-colors ${i === dotIdx ? "bg-orange-500" : "bg-zinc-600"}`}
-          />
-        ))}
-      </div>
+    <div className="text-center mb-12 md:mb-16">
+      {etiqueta && (
+        <span className="inline-block text-xs font-bold uppercase tracking-widest text-[#FFD500] mb-3">
+          {etiqueta}
+        </span>
+      )}
+      <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">{titulo}</h2>
+      {subtitulo && <p className="text-gray-400 text-lg max-w-2xl mx-auto">{subtitulo}</p>}
     </div>
   );
 }
 
-// Base de "camisetas vendidas" (marketing) — las ventas reales se suman a este número.
-const VENDIDAS_BASE = 500;
-const MODELOS_FALLBACK = 19;
+const problemas = [
+  {
+    titulo: "Diseño idéntico al de todos",
+    texto: "Tiendanube te da el mismo template que otras 100.000 tiendas. Tu marca queda invisible entre la multitud.",
+  },
+  {
+    titulo: "Te cobran por cada venta",
+    texto: "Comisiones del 2 al 10% en cada transacción. Si vendés bien, les das una parte. Siempre.",
+  },
+  {
+    titulo: "Soporte por ticket y días de espera",
+    texto: "Cuando tenés un problema urgente, mandás un ticket y esperás. Sin cara, sin nombre, sin urgencia.",
+  },
+];
+
+const soluciones = [
+  {
+    titulo: "Tu diseño, tu identidad",
+    texto: "Construimos una tienda 100% personalizada para tu marca. Colores, tipografía, fotos, voz. Todo tuyo.",
+  },
+  {
+    titulo: "Cero comisión, siempre",
+    texto: "Todo lo que vendés es tuyo. No importa si vendés $10.000 o $10.000.000: te quedás con el 100%.",
+  },
+  {
+    titulo: "Un humano real del otro lado",
+    texto: "Tenés acceso directo a nosotros por WhatsApp. Respondemos rápido, sin tickets, sin bots.",
+  },
+];
+
+const pasos = [
+  {
+    numero: "01",
+    icon: FaStore,
+    titulo: "Registrate",
+    texto: "Creá tu cuenta en 2 minutos. Solo necesitás tu mail y el nombre de tu negocio.",
+  },
+  {
+    numero: "02",
+    icon: FaComments,
+    titulo: "Hablá con nuestra IA",
+    texto: "Un chat inteligente te hace unas preguntas sobre tu marca, productos y estilo.",
+  },
+  {
+    numero: "03",
+    icon: FaRocket,
+    titulo: "Tu tienda, live",
+    texto: "Con tus respuestas armamos y lanzamos tu tienda. Vos solo tenés que cargar los productos.",
+  },
+];
 
 export default function HomePage() {
-  const [destacados,     setDestacados]     = useState([]);
-  const [modelosCount,   setModelosCount]   = useState(MODELOS_FALLBACK);
-  const [vendidasCount,  setVendidasCount]  = useState(VENDIDAS_BASE);
-
-  useEffect(() => {
-    supabase
-      .from("productos_catalogo")
-      .select("id, nombre, precio, imagen")
-      .eq("destacado", true)
-      .limit(4)
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          setDestacados(data);
-        } else {
-          // fallback a los primeros 4 productos locales hasta que se configuren en el admin
-          setDestacados(productosLocales.slice(0, 4));
-        }
-      });
-
-    // Cuenta dinámica de modelos en catálogo. Traemos solo los IDs y
-    // contamos el array. Si la query falla, queda el MODELOS_FALLBACK.
-    supabase
-      .from("productos_catalogo")
-      .select("id")
-      .then(({ data, error }) => {
-        if (error) {
-          console.warn("[home] No se pudo contar modelos:", error.message);
-          return;
-        }
-        if (Array.isArray(data) && data.length > 0) {
-          setModelosCount(data.length);
-        }
-      });
-
-    // Camisetas vendidas: BASE + suma de cantidad de items en pedidos confirmados.
-    // Si la query falla, queda el VENDIDAS_BASE.
-    supabase
-      .from("pedidos")
-      .select("items, estado")
-      .neq("estado", "pendiente")
-      .then(({ data, error }) => {
-        if (error || !Array.isArray(data)) return;
-        const sumaReal = data.reduce((acc, pedido) => {
-          const items = Array.isArray(pedido.items) ? pedido.items : [];
-          const subtotal = items.reduce((s, i) => s + (Number(i?.cantidad) || 0), 0);
-          return acc + subtotal;
-        }, 0);
-        setVendidasCount(VENDIDAS_BASE + sumaReal);
-      });
-  }, []);
-
   return (
-    <main>
-      {/* Hero + Stats */}
-      <section
-        className="relative w-full text-white -mt-16 md:-mt-20 flex flex-col items-center text-center px-6"
-        style={{ backgroundImage: "url('/fondo_inicio.png')", backgroundSize: "cover", backgroundPosition: "center" }}
-      >
-        <div className="absolute inset-0 bg-black/60" />
-
-        {/* Hero content */}
-        <div className="relative z-10 flex flex-col items-center pt-24 md:pt-32 pb-10 md:pb-16 min-h-[300px] md:min-h-[400px] justify-center w-full">
-          <h1 className="text-3xl md:text-5xl font-extrabold mb-4 leading-tight">Camisetas Zeus</h1>
-          <p className="text-sm md:text-xl text-orange-500 font-semibold mb-10 max-w-xs md:max-w-none">
-            Las mejores camisetas de rugby de Argentina
-          </p>
+    <div className="min-h-screen bg-black text-white flex flex-col">
+      {/* ── AlphaSites Platform Header ── */}
+      <header className="sticky top-0 z-50 bg-black/90 backdrop-blur border-b border-zinc-800">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link
-            href="/catalogo"
-            className="inline-block bg-orange-500 text-black font-bold px-6 md:px-8 py-3 rounded-full text-sm md:text-base hover:bg-orange-400 transition-colors active:scale-95 shadow-lg shadow-orange-500/30"
+            href="/"
+            className="flex items-center gap-2 font-extrabold text-xl tracking-tight hover:text-[#FFE033] transition-colors"
           >
-            Ver catálogo
+            <span className="text-[#FFD500]">⚡</span>
+            Alpha Sites
+          </Link>
+
+          <nav className="hidden sm:flex items-center gap-6 text-sm">
+            <Link href="/#como-funciona" className="text-gray-400 hover:text-white transition-colors">
+              Cómo funciona
+            </Link>
+            <Link href="/#precios" className="text-gray-400 hover:text-white transition-colors">
+              Precios
+            </Link>
+            <Link
+              href="/alphasites/registro"
+              className="bg-[#FFD500] text-black font-semibold px-4 py-2 rounded-full hover:bg-[#FFE033] transition-colors"
+            >
+              Empezá gratis
+            </Link>
+          </nav>
+
+          {/* Mobile CTA */}
+          <Link
+            href="/alphasites/registro"
+            className="sm:hidden bg-[#FFD500] text-black font-semibold px-4 py-2 rounded-full text-sm hover:bg-[#FFE033] transition-colors"
+          >
+            Empezá
           </Link>
         </div>
+      </header>
 
-        {/* Stats */}
-        <FadeIn>
-          <div className="relative z-10 w-full border-t border-white/20">
-            <div className="max-w-5xl mx-auto px-4 py-8 grid grid-cols-2 gap-4 text-center">
-              <div>
-                <p className="text-2xl md:text-3xl font-extrabold text-orange-500">
-                  <AnimatedCounter target={vendidasCount} suffix="+" />
-                </p>
-                <p className="text-xs md:text-sm text-gray-300 mt-1">Camisetas vendidas</p>
-              </div>
-              <div>
-                <p className="text-2xl md:text-3xl font-extrabold text-orange-500">
-                  <AnimatedCounter target={modelosCount} />
-                </p>
-                <p className="text-xs md:text-sm text-gray-300 mt-1">Modelos disponibles</p>
+      <main className="flex-1">
+        {/* ── HERO ── */}
+        <section className="relative overflow-hidden bg-black">
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-[#FFD500]/10 blur-3xl rounded-full" />
+          </div>
+
+          <div className="relative max-w-6xl mx-auto px-6 pt-24 pb-28 md:pt-32 md:pb-36 text-center">
+            <span className="inline-block bg-[#FFD500]/10 border border-[#FFD500]/30 text-[#FFE033] text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-8">
+              Alpha Sites · Plataforma para emprendedoras
+            </span>
+
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.1] mb-6 tracking-tight">
+              Tu tienda online,
+              <br />
+              <span className="text-[#FFD500]">hecha con vos</span>
+            </h1>
+
+            <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+              Diseño exclusivo, cero comisión y soporte humano real. No más templates genéricos ni
+              comisiones que se comen tus ganancias.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href="/alphasites/registro"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#FFD500] text-black font-bold px-8 py-4 rounded-full text-lg hover:bg-[#FFE033] transition-colors active:scale-95 shadow-lg shadow-[#FFD500]/30"
+              >
+                Crear mi tienda gratis
+              </Link>
+              <a
+                href="https://wa.me/5492216220145"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-zinc-700 text-white font-semibold px-8 py-4 rounded-full text-lg hover:border-[#FFD500] hover:text-[#FFE033] transition-colors"
+              >
+                <FaWhatsapp />
+                Hablar con el equipo
+              </a>
+            </div>
+
+            <p className="mt-6 text-sm text-gray-600">
+              Setup en 48 hs · Sin costo de suscripción el primer mes
+            </p>
+          </div>
+        </section>
+
+        {/* ── PROBLEMA ── */}
+        <section className="bg-zinc-950 py-20 md:py-28">
+          <div className="max-w-6xl mx-auto px-6">
+            <SeccionTitulo
+              etiqueta="El problema"
+              titulo="¿Por qué Tiendanube no alcanza?"
+              subtitulo="Emprendés con ganas, pero la plataforma te pone límites que frenán tu crecimiento."
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {problemas.map((p) => (
+                <div
+                  key={p.titulo}
+                  className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300"
+                >
+                  <div className="w-8 h-8 rounded-full bg-red-900/40 border border-red-800 flex items-center justify-center mb-4">
+                    <FaTimes className="text-red-400 text-sm" />
+                  </div>
+                  <h3 className="font-bold text-white text-lg mb-2">{p.titulo}</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed">{p.texto}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── SOLUCIÓN ── */}
+        <section className="bg-black py-20 md:py-28">
+          <div className="max-w-6xl mx-auto px-6">
+            <SeccionTitulo
+              etiqueta="La solución"
+              titulo="Alpha Sites es diferente"
+              subtitulo="Construimos tu tienda como si fuera la nuestra. Porque queremos que te vaya bien."
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {soluciones.map((s) => (
+                <div
+                  key={s.titulo}
+                  className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 group hover:-translate-y-1 transition-transform duration-300"
+                >
+                  <div className="w-8 h-8 rounded-full bg-green-900/40 border border-green-700 flex items-center justify-center mb-4">
+                    <FaCheck className="text-green-400 text-sm" />
+                  </div>
+                  <h3 className="font-bold text-white text-lg mb-2">{s.titulo}</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed">{s.texto}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── CÓMO FUNCIONA ── */}
+        <section id="como-funciona" className="bg-zinc-950 py-20 md:py-28">
+          <div className="max-w-6xl mx-auto px-6">
+            <SeccionTitulo
+              etiqueta="El proceso"
+              titulo="3 pasos para tener tu tienda"
+              subtitulo="Sin conocimientos técnicos, sin complicaciones. Solo contanos sobre tu marca."
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+              <div className="hidden md:block absolute top-10 left-[20%] right-[20%] h-px bg-zinc-700" />
+
+              {pasos.map((paso) => {
+                const Icon = paso.icon;
+                return (
+                  <div key={paso.numero} className="flex flex-col items-center text-center relative">
+                    <div className="w-20 h-20 rounded-2xl bg-[#FFD500] flex items-center justify-center mb-6 shadow-lg shadow-[#FFD500]/30 z-10">
+                      <Icon className="text-black text-3xl" />
+                    </div>
+                    <span className="text-xs font-bold text-[#FFD500] tracking-widest mb-2">{paso.numero}</span>
+                    <h3 className="font-bold text-white text-xl mb-3">{paso.titulo}</h3>
+                    <p className="text-gray-400 text-sm leading-relaxed max-w-xs">{paso.texto}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ── PRECIOS ── */}
+        <section id="precios" className="bg-black py-20 md:py-28">
+          <div className="max-w-6xl mx-auto px-6">
+            <SeccionTitulo
+              etiqueta="Precios"
+              titulo="Transparente desde el día uno"
+              subtitulo="Sin sorpresas, sin letra chica, sin comisiones ocultas."
+            />
+
+            <div className="max-w-lg mx-auto">
+              <div className="bg-zinc-900 border border-[#FFD500]/40 rounded-3xl p-8 md:p-10 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-[#FFD500]/10 blur-3xl rounded-full pointer-events-none" />
+
+                <span className="inline-block bg-[#FFD500] text-black text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-6">
+                  Plan Único
+                </span>
+
+                <div className="mb-8">
+                  <p className="text-sm text-gray-400 mb-1">Setup (pago único)</p>
+                  <p className="text-4xl font-extrabold text-white">
+                    $80.000 <span className="text-2xl text-gray-500">– $120.000</span>
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">ARS · según complejidad del proyecto</p>
+                </div>
+
+                <div className="mb-8">
+                  <p className="text-sm text-gray-400 mb-1">Mantenimiento mensual</p>
+                  <p className="text-4xl font-extrabold text-white">
+                    $15.000 <span className="text-2xl text-gray-500">– $25.000</span>
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">ARS/mes · hosting, soporte y actualizaciones incluidas</p>
+                </div>
+
+                <ul className="space-y-3 mb-8">
+                  {[
+                    "Diseño 100% personalizado para tu marca",
+                    "Cero comisión por venta, siempre",
+                    "Integración con MercadoPago",
+                    "Panel de admin para gestionar productos y pedidos",
+                    "Soporte directo por WhatsApp",
+                    "Dominio propio incluido el primer año",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3 text-sm text-gray-300">
+                      <FaCheck className="text-[#FFD500] shrink-0 mt-0.5" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  href="/alphasites/registro"
+                  className="block w-full text-center bg-[#FFD500] text-black font-bold py-4 rounded-2xl text-lg hover:bg-[#FFE033] transition-colors active:scale-95"
+                >
+                  Empezar ahora
+                </Link>
+
+                <p className="text-center text-xs text-gray-600 mt-4">Sin costo el primer mes de mantenimiento</p>
               </div>
             </div>
           </div>
-        </FadeIn>
-      </section>
+        </section>
 
-      <div className="max-w-5xl mx-auto px-4 py-10 md:py-12">
-
-        {/* Quiénes Somos */}
-        <FadeIn>
-          <section className="bg-zinc-900 rounded-2xl text-white p-6 md:p-10 mb-12 md:mb-16 transition-transform duration-300 hover:-translate-y-1 border border-zinc-700">
-            <h2 className="text-2xl md:text-3xl font-extrabold mb-4">Quiénes Somos</h2>
-            <p className="text-gray-300 mb-8 max-w-2xl text-sm md:text-base leading-relaxed">
-              Camisetas Zeus nació en La Plata con una idea simple: acercar las mejores camisetas de rugby
-              a quienes realmente las viven. Somos un emprendimiento que combina la pasión por el deporte
-              con el compromiso de ofrecer productos de calidad a precios accesibles.
+        {/* ── CTA FINAL ── */}
+        <section className="bg-zinc-950 py-20 md:py-28">
+          <div className="max-w-3xl mx-auto px-6 text-center">
+            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6 leading-tight">
+              Tu marca merece una tienda
+              <br />
+              <span className="text-[#FFD500]">que la represente</span>
+            </h2>
+            <p className="text-gray-400 text-lg mb-10">
+              Registrate hoy. En 48 horas tu tienda está lista para vender.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-              {valores.map(({ icon: Icon, titulo, texto }, i) => (
-                <FadeIn key={titulo} delay={i * 100}>
-                  <div className="border border-zinc-700 rounded-xl p-5 transition-transform duration-300 hover:-translate-y-2 cursor-default h-full">
-                    <Icon className="text-3xl text-orange-500" />
-                    <h3 className="text-base md:text-lg font-semibold mt-3 mb-1">{titulo}</h3>
-                    <p className="text-gray-400 text-sm">{texto}</p>
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-          </section>
-        </FadeIn>
+            <Link
+              href="/alphasites/registro"
+              className="inline-flex items-center gap-2 bg-[#FFD500] text-black font-bold px-10 py-5 rounded-full text-xl hover:bg-[#FFE033] transition-colors active:scale-95 shadow-xl shadow-[#FFD500]/30"
+            >
+              Crear mi tienda gratis →
+            </Link>
+          </div>
+        </section>
+      </main>
 
-        {/* Carrusel de productos destacados */}
-        {destacados.length > 0 && (
-        <FadeIn>
-          <section className="mb-12 md:mb-16">
-            <h2 className="text-2xl font-bold mb-6 text-white">Productos destacados</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {destacados.slice(0, 2).length > 0 && <Carousel items={destacados.slice(0, 2)} />}
-              {destacados.slice(2, 4).length > 0 && <Carousel items={destacados.slice(2, 4)} />}
-            </div>
-            <div className="mt-6 text-center">
-              <Link href="/catalogo" className="inline-block bg-zinc-900 text-white border border-zinc-600 font-semibold px-8 py-3 rounded-full hover:bg-orange-500 hover:text-black hover:border-orange-500 transition-colors">
-                Ver catálogo completo
-              </Link>
-            </div>
-          </section>
-        </FadeIn>
-        )}
-
-      </div>
-    </main>
+      <footer className="border-t border-zinc-800 py-8 text-center text-sm text-gray-600">
+        <p>© {new Date().getFullYear()} Alpha Sites · Desarrollado en La Plata, Argentina</p>
+      </footer>
+    </div>
   );
 }

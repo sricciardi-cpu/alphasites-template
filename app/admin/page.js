@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import tenant from "@/tenant.config.json";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -33,9 +34,9 @@ export default function AdminLoginPage() {
     <main className="min-h-screen bg-black flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <img src="/logo.png" alt="Zeus" className="h-14 mx-auto mb-3" />
+          <img src={tenant.logo} alt={tenant.nombre} className="h-14 mx-auto mb-3" />
           <h1 className="text-2xl font-extrabold text-white">Panel de administración</h1>
-          <p className="text-gray-400 text-sm mt-1">Camisetas Zeus</p>
+          <p className="text-gray-400 text-sm mt-1">{tenant.nombre}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 flex flex-col gap-4">

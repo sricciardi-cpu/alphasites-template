@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { FaWhatsapp, FaTrash, FaTimes, FaArrowRight } from "react-icons/fa";
+import tenant from "@/tenant.config.json";
 
 function formatearPrecio(precio) {
   return "$" + precio.toLocaleString("es-AR");
@@ -29,7 +30,7 @@ export default function CarritoPage() {
   const lineasProductos = items
     .map((i) => `${i.nombre} - ${i.talle} x${i.cantidad} - ${formatearPrecio(i.precio * i.cantidad)}`)
     .join(", ");
-  const whatsappUrl = `https://wa.me/5492216220145?text=${encodeURIComponent(
+  const whatsappUrl = `https://wa.me/${tenant.contacto.whatsapp}?text=${encodeURIComponent(
     `Hola! Quiero consultar por estos productos: ${lineasProductos} Total: ${formatearPrecio(total)}`
   )}`;
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { FaTiktok } from "react-icons/fa6";
+import tenant from "@/tenant.config.json";
 
 const enlaces = [
   { href: "/", label: "Inicio" },
@@ -22,21 +23,21 @@ export default function Footer() {
           {/* Left column: brand */}
           <div className="flex flex-col gap-3 items-start">
             <div className="flex items-center gap-2 mb-1">
-              <img src="/logo.png" alt="Camisetas Zeus" className="h-6 w-auto" />
+              <img src={tenant.logo} alt={tenant.nombre} className="h-6 w-auto" />
               <span className="text-sm font-semibold uppercase tracking-widest text-gray-400">
-                Camisetas Zeus
+                {tenant.nombre}
               </span>
             </div>
             <a
-              href="https://www.google.com/maps/place/La+Plata,+Buenos+Aires"
+              href={tenant.ubicacion_maps_url}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block text-sm text-gray-400 hover:text-orange-400 transition-colors"
             >
-              La Plata, Buenos Aires
+              {tenant.ubicacion}
             </a>
-            <p className="text-sm text-gray-400">Envíos a todo el país</p>
-            <p className="text-sm text-gray-400">Transferencia · Efectivo · Mercado Pago</p>
+            <p className="text-sm text-gray-400">{tenant.footer.envios_texto}</p>
+            <p className="text-sm text-gray-400">{tenant.footer.metodos_pago_texto}</p>
           </div>
 
           {/* Middle column: links */}
@@ -61,25 +62,25 @@ export default function Footer() {
               Seguinos
             </p>
             <a
-              href="https://instagram.com/camisetaszeus"
+              href={tenant.contacto.instagram_url}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-orange-400 transition-colors"
             >
               <span className="w-5 flex justify-center shrink-0"><FaInstagram className="text-xl" /></span>
-              @camisetaszeus
+              {tenant.contacto.instagram_handle}
             </a>
             <a
-              href="https://tiktok.com/@camisetaszeus8"
+              href={tenant.contacto.tiktok_url}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-orange-400 transition-colors"
             >
               <span className="w-5 flex justify-center shrink-0"><FaTiktok className="text-xl" /></span>
-              @camisetaszeus
+              {tenant.contacto.tiktok_handle}
             </a>
             <a
-              href="https://wa.me/5492216220145"
+              href={`https://wa.me/${tenant.contacto.whatsapp}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-orange-400 transition-colors"
@@ -93,7 +94,7 @@ export default function Footer() {
 
         {/* Orange divider + bottom bar */}
         <div className="border-t border-orange-500 mt-12 pt-6 flex flex-col items-center gap-1 text-center">
-          <p className="text-sm text-gray-400">© 2026 Camisetas Zeus</p>
+          <p className="text-sm text-gray-400">© {tenant.anio_fundacion} {tenant.nombre}</p>
           <a
             href="https://instagram.com/alphasitess"
             target="_blank"

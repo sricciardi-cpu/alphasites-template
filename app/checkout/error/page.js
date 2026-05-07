@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FaTimesCircle, FaWhatsapp } from "react-icons/fa";
+import tenant from "@/tenant.config.json";
 
 export default function CheckoutErrorPage() {
   return (
@@ -17,7 +18,7 @@ export default function CheckoutErrorPage() {
           Volver al carrito
         </Link>
         <a
-          href="https://wa.me/5492216220145"
+          href={`https://wa.me/${tenant.contacto.whatsapp}`}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center justify-center gap-2 border border-zinc-600 text-white font-semibold px-8 py-4 rounded-xl hover:bg-white hover:text-black transition-colors"

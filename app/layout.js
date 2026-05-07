@@ -1,24 +1,24 @@
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import ProgressBar from "@/components/ProgressBar";
 import MetaPixel from "@/components/MetaPixel";
 import { CartProvider } from "@/context/CartContext";
+import { ConditionalShell } from "@/app/ConditionalShell";
+import tenant from "@/tenant.config.json";
 
 export const metadata = {
-  title: "Camisetas Zeus",
-  description: "Las mejores camisetas de rugby de Argentina",
+  title: tenant.seo.titulo,
+  description: tenant.seo.descripcion,
   manifest: "/manifest.json",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: tenant.logo,
+    apple: tenant.logo,
   },
 };
 
 export const viewport = {
-  themeColor: "#f97316",
+  themeColor: tenant.color_primario_hex,
 };
 
 export default function RootLayout({ children }) {
@@ -28,9 +28,7 @@ export default function RootLayout({ children }) {
         <MetaPixel />
         <CartProvider>
           <ProgressBar />
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
+          <ConditionalShell>{children}</ConditionalShell>
         </CartProvider>
         <Analytics />
         <SpeedInsights />

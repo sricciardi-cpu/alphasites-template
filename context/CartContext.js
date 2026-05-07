@@ -1,6 +1,9 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
+import tenant from "@/tenant.config.json";
+
+const CART_KEY = tenant.carrito.storage_key;
 
 const CartContext = createContext(null);
 
@@ -11,7 +14,7 @@ export function CartProvider({ children }) {
   // Cargar desde localStorage al montar
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("zeus_cart");
+      const stored = localStorage.getItem(CART_KEY);
       if (stored) setItems(JSON.parse(stored));
     } catch {}
     setHidratado(true);
@@ -21,7 +24,7 @@ export function CartProvider({ children }) {
   useEffect(() => {
     if (!hidratado) return;
     try {
-      localStorage.setItem("zeus_cart", JSON.stringify(items));
+      localStorage.setItem(CART_KEY, JSON.stringify(items));
     } catch {}
   }, [items, hidratado]);
 
@@ -45,7 +48,7 @@ export function CartProvider({ children }) {
 
   function vaciarCarrito() {
     setItems([]);
-    try { localStorage.removeItem("zeus_cart"); } catch {}
+    try { localStorage.removeItem(CART_KEY); } catch {}
   }
 
   function cantidadEnCarrito(id, talle) {

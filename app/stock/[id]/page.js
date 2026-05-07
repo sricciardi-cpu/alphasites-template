@@ -90,7 +90,7 @@ export default function StockDetallePage({ params }) {
   return (
     <main className="max-w-5xl mx-auto px-4 py-4">
       <nav className="flex items-center gap-1.5 text-sm text-gray-400 mb-3">
-        <Link href="/" className="hover:text-orange-500 transition-colors">Inicio</Link>
+        <Link href="/tienda" className="hover:text-orange-500 transition-colors">Inicio</Link>
         <FaChevronRight className="text-xs" />
         <Link href="/stock" className="hover:text-orange-500 transition-colors">Stock</Link>
         <FaChevronRight className="text-xs" />

@@ -1,0 +1,74 @@
+{
+  "nombre": "Camisetas Zeus",
+  "logo": "/logo.png",
+  "color_primario_hex": "#f97316",
+  "ubicacion": "La Plata, Buenos Aires",
+  "ubicacion_maps_url": "https://www.google.com/maps/place/La+Plata,+Buenos+Aires",
+  "anio_fundacion": 2026,
+
+  "seo": {
+    "titulo": "Camisetas Zeus",
+    "descripcion": "Las mejores camisetas de rugby de Argentina"
+  },
+
+  "contacto": {
+    "whatsapp": "5492216220145",
+    "email": "camisetaszeus@hotmail.com",
+    "instagram_url": "https://instagram.com/camisetaszeus",
+    "instagram_handle": "@camisetaszeus",
+    "tiktok_url": "https://tiktok.com/@camisetaszeus8",
+    "tiktok_handle": "@camisetaszeus"
+  },
+
+  "hero": {
+    "imagen": "/fondo_inicio.png",
+    "titulo": "Camisetas Zeus",
+    "subtitulo": "Las mejores camisetas de rugby de Argentina",
+    "cta_texto": "Ver catálogo",
+    "cta_href": "/catalogo"
+  },
+
+  "stats": {
+    "vendidas_base": 500,
+    "vendidas_label": "Camisetas vendidas",
+    "modelos_fallback": 19,
+    "modelos_label": "Modelos disponibles"
+  },
+
+  "quienes_somos": {
+    "titulo": "Quiénes Somos",
+    "texto": "Camisetas Zeus nació en La Plata con una idea simple: acercar las mejores camisetas de rugby a quienes realmente las viven. Somos un emprendimiento que combina la pasión por el deporte con el compromiso de ofrecer productos de calidad a precios accesibles.",
+    "valores": [
+      {
+        "icono": "FaHeart",
+        "titulo": "Pasión por el deporte",
+        "texto": "Vivimos el rugby desde adentro."
+      },
+      {
+        "icono": "FaStar",
+        "titulo": "Calidad garantizada",
+        "texto": "Solo vendemos lo que nosotros mismos usaríamos."
+      },
+      {
+        "icono": "FaShippingFast",
+        "titulo": "Entrega rápida",
+        "texto": "Stock disponible y envíos a todo el país."
+      }
+    ]
+  },
+
+  "footer": {
+    "envios_texto": "Envíos a todo el país",
+    "metodos_pago_texto": "Transferencia · Efectivo · Mercado Pago"
+  },
+
+  "carrito": {
+    "storage_key": "zeus_cart"
+  },
+
+  "email": {
+    "marca_display": "Zeus Rugby",
+    "slogan_display": "Camisetas de rugby de alta calidad",
+    "footer_text": "Zeus Rugby · Buenos Aires, Argentina"
+  }
+}

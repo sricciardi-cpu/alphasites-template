@@ -38,7 +38,7 @@ export default function CheckoutExitoPage() {
         Te enviamos un email de confirmación. Nos ponemos en contacto a la brevedad para coordinar el envío.
       </p>
       <Link
-        href="/"
+        href="/tienda"
         className="inline-block bg-orange-500 text-black font-semibold px-8 py-4 rounded-xl hover:bg-orange-400 transition-colors"
       >
         Volver al inicio
